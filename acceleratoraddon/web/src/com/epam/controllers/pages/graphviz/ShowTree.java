@@ -268,7 +268,9 @@ public class ShowTree  extends AbstractPageController {
                     {
                         String xmlDefinition = attribute.getAttributeType().getXmldefinition();
                         String attributeElementType = MiscUtils.extractFromXMLDefinition(xmlDefinition, "elementtype");
-                        rules.addRule(typeModel.getCode(), attributeCode, attributeElementType, "", GraphVizConstants.LINKTO, GraphVizConstants.LINKATTRCOLL);
+                        if (!MiscUtils.isAtomicType(attributeElementType)) {
+                            rules.addRule(typeModel.getCode(), attributeCode, attributeElementType, "", GraphVizConstants.LINKTO, GraphVizConstants.LINKATTRCOLL);
+                        }
                     } else
                     {
                         rules.addRule(typeModel.getCode(), attributeCode, attributeType , "", GraphVizConstants.LINKTO, GraphVizConstants.LINKATTR);
