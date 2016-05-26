@@ -55,7 +55,7 @@ public class GraphVizRules {
     @Override
     public String toString() {
 
-        String header = "digraph R {\n" +
+        String header = "digraph G {\n" +
                 "rankdir=LR\n" +
                 "packmode=\"graph\"\n" +
                 "\n" +

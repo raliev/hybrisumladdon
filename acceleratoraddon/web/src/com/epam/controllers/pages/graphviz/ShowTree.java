@@ -1,5 +1,6 @@
 package com.epam.controllers.pages.graphviz;
 import com.epam.controllers.UmladdonControllerConstants;
+import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 import de.hybris.platform.acceleratorstorefrontcommons.controllers.pages.AbstractPageController;
 import de.hybris.platform.acceleratorstorefrontcommons.controllers.util.GlobalMessages;
 import de.hybris.platform.core.model.type.*;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.apache.commons.codec.binary.Base64;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +38,7 @@ public class ShowTree  extends AbstractPageController {
 
     private boolean displayAttributes = false;
     private List<String> processedExtensions;
-
+    private boolean needProcessOnlyActiveExtensions = true;
     Map<String, List<String>> extensionTypes = new HashMap<String, List<String>>();
 
     Map<ComposedTypeModel, Set<AttributeDescriptorModel>> attributesOfTheType = new HashMap<ComposedTypeModel, Set<AttributeDescriptorModel>>();
@@ -50,7 +52,9 @@ public class ShowTree  extends AbstractPageController {
     public String graphviz(@RequestParam("extension") final String extensions,
                            @RequestParam(value = "displayAttributes", required = false, defaultValue = "no") final String displayAttributesParam,
                            @RequestParam(value = "types", required = false, defaultValue = "") final String particularTypes,
-                           @RequestParam(value = "relations",  required = false, defaultValue = "yes") final String relations,
+                           @RequestParam(value = "relations", required = false, defaultValue = "yes") final String relations,
+                           @RequestParam(value = "needProcessOnlyActiveExtensionsParam", required = false, defaultValue = "yes") final String needProcessOnlyActiveExtensionsParam,
+                           @RequestParam(value = "autovisualize", required = false, defaultValue = "no") final String autovisualize,
                            final Model model,
                            final HttpServletRequest request, final HttpServletResponse response)  // NOSONAR
     {
@@ -60,6 +64,7 @@ public class ShowTree  extends AbstractPageController {
         setDisplayAttributes(displayAttributesParam.equals("yes"));
         setProcessedExtensions(extensions);
         setParticularTypes(particularTypes);
+        setNeedProcessOnlyActiveExtensions(needProcessOnlyActiveExtensionsParam);
 
         Set<String> extensionnames = new HashSet<String>();
         extensionnames.addAll(getProcessedExtensions());
@@ -77,13 +82,16 @@ public class ShowTree  extends AbstractPageController {
         addDescriptionToResponse(rules);
 
         model.addAttribute("script", rules.toString());
+        model.addAttribute("script2", new String(Base64.encodeBase64(rules.toString().getBytes())));
         model.addAttribute("extensions", typesServices.getAllExtensions());
         model.addAttribute("selectedExtensions", extensionnames);
         model.addAttribute("selectedTypes", particularTypesList);
         model.addAttribute("extensionscsv", extensions);
         model.addAttribute("typescsv", particularTypes);
+        model.addAttribute("autovisualize", autovisualize.equals("on") ? "checked" : "");
         model.addAttribute("relations", relations);
         model.addAttribute("displayAttributes", displayAttributesParam);
+        model.addAttribute("needProcessOnlyActiveExtensionsParam", needProcessOnlyActiveExtensionsParam);
         model.addAttribute("typesList", extensionsComposedTypes);
 
         return "addon:/umladdon/pages/showTree/showTree";
@@ -155,7 +163,7 @@ public class ShowTree  extends AbstractPageController {
                 // skip attributes
             } else {
                 ComposedTypeModel entity = entry.getKey();
-                if (processedExtensions.contains( entity.getExtensionName() )) { // only of the specified extensions
+                if (!needProcessOnlyActiveExtensions || processedExtensions.contains( entity.getExtensionName() )) { // only of the specified extensions
                     GraphVizDescription graphVizDescription = new GraphVizDescription();
                     graphVizDescription.setEntity(entity.getCode());
                     Iterator<AttributeDescriptorModel> iter6 = entry.getValue().iterator();
@@ -322,6 +330,10 @@ public class ShowTree  extends AbstractPageController {
 
     public List<String> getProcessedExtensions() {
         return processedExtensions;
+    }
+
+    public void setNeedProcessOnlyActiveExtensions(String needProcessOnlyActiveExtensions) {
+        this.needProcessOnlyActiveExtensions = needProcessOnlyActiveExtensions.equals("yes") ? true : false;
     }
 
 

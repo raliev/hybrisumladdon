@@ -2,6 +2,7 @@ package com.epam.controllers.pages;
 
 import com.epam.controllers.pages.graphviz.GraphViz;
 import de.hybris.platform.acceleratorstorefrontcommons.controllers.pages.AbstractPageController;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
@@ -43,13 +44,16 @@ public class GenerateGraph extends AbstractPageController {
     private static final String CONTENT_TYPE_PNG = "image/png";
     private static final String CONTENT_TYPE_PDF = "application/pdf";
 
-    @RequestMapping(method = { RequestMethod.GET, RequestMethod.POST } )
-    public void generateGraph (@RequestParam(value = "dot", required = false, defaultValue = "") final String dot,
+    @RequestMapping(method = { RequestMethod.POST } )
+    public void generateGraph (@RequestParam(value = "dot", required = false)  String dot,
+                               @RequestParam(value = "download", required = false) String download,
                            final Model model,
                            final HttpServletRequest request, final HttpServletResponse response) throws IOException  // NOSONAR
     {
+         dot = new String(Base64.decodeBase64(dot));
+        System.out.println("["+dot);
         String target = request.getRequestURI();
-        response.setStatus(200);
+            response.setStatus(200);
 
         if(StringUtils.isNotBlank(dot) && GraphViz.isValidDotText(dot)) {
 
@@ -57,9 +61,17 @@ public class GenerateGraph extends AbstractPageController {
                     StringUtils.remove((URLDecoder.decode(target, "UTF-8")).trim().toLowerCase(), '/') : null);
 
             FileEntity graph = this.generate(dot, target);
+
+            if (download!=null && download.equals("on")) {
+                response.setHeader("Content-Description", "File Transfer");
+                response.setContentType("application/octet-stream");
+                response.setHeader("Content-Disposition", "attachment; filename=\"Image.png\"");
+                response.setHeader("Content-Transfer-Encoding", " binary");
+                response.setHeader("Expires", "0");
+                response.setHeader("Cache-Control", "must-revalidate, post-check=0, pre-check=0");
+                response.setHeader("Pragma", "public");
+            }
             IOUtils.copy(graph.getContent(), response.getOutputStream());
-            //response.setContentType("image/png");
-            //response.setHeader("Content-Disposition", "attachment; filename=image.png");
             response.setContentLength(safeLongToInt(graph.getContentLength()));
             response.flushBuffer();
 
@@ -87,8 +99,7 @@ public class GenerateGraph extends AbstractPageController {
             graphType = GRAPH_TYPE_SVG;
             contentType = ContentType.APPLICATION_SVG_XML;
 
-        } else if(GRAPH_TYPE_PDF.equals(target)) {
-            graphType = GRAPH_TYPE_PDF;
+        } else if(GRAPH_TYPE_PDF.equals(target)) {            graphType = GRAPH_TYPE_PDF;
             contentType = ContentType.create(CONTENT_TYPE_PDF, (Charset) null);
 
         } else {

@@ -28,7 +28,9 @@ function typesClick()
 }
 </script>
 <form action="" method="GET">
-<table><tr align=top><td><b>Extensions:</b><br>
+<table width=100% border=0><tr align=top><td>
+<table border=0><tr valign=top><td>
+<b>Extensions:</b><br>
 <select name="extensionSelector" multiple size=10 onClick="extensionClick()">
 	<c:forEach var="extension" items="${extensions}">
 	  <option id="ext_${extension}">${extension}</option>
@@ -67,15 +69,30 @@ function typesClick()
 <select name="relations">
 <option id=r_yes>yes</option><option id=r_no>no</option>
 </select>
+<br>
+<br>
+<input type="submit" style="width:100px;height:40px">
 <script>
    document.getElementById('r_${relations}').selected = true;
    document.getElementById('da_${displayAttributes}').selected = true;
 </script>
-</td><td><input type="submit"></td></tr></table>
+</td><td></td></tr></table>
 </form>
 <hr>
-<form action="/trainingstorefront/showTreeGenerateGraph" method="POST">
-<textarea style="width:500px;height:200px" name="dot">${script}</textarea>
-<input type="submit" value="Visualize!" onClick="document.forms[1].chl.value=document.forms[0].script.value;alert(document.forms[1].chl.value);">
+<form target="ifram" action="${request.contextPath}/showTreeGenerateGraph" method="POST">
+<table>
+<tr>
+<td><textarea style="width:500px;height:200px" name="dot1">${script}</textarea>
+<input type="hidden" name="dot" value="${script2}"/>
+<br>
+<br>Install <a href="http://www.graphviz.org/Download.php">Graphviz</a> and copy-paste to GVEDIT
+<br>Copy-paste to <a href="http://dreampuf.github.io/GraphvizOnline/">http://dreampuf.github.io/GraphvizOnline/</a>
+</tr>
+</table>
+<input type="checkbox" name="download"/>download png?
+<input type="submit" value="Visualize!" onClick=""> to make it work you need to install Graphviz and configure the extension, see README in the root directory
 <input type="hidden" name="CSRFToken" value="${CSRFToken}">
 </form>
+</td><td width=100%>
+<iframe src="about:blank" style="width:100%;height:100%" id=ifram name=ifram></iframe>
+</td></tr></table>
