@@ -1,0 +1,27 @@
+The implementation is quick-and-dirty. If someone has time to make it better, there are a lot of things to do.
+
+
+1. You need to download Graphviz to render diagrams online http://graphviz.org
+2. You need to configure local paths to graphviz in umladdon\acceleratoraddon\web\src\com\epam\controllers\pages\graphviz\GraphViz.java 
+
+	//private static String TEMP_DIR = "/tmp";	// Linux
+	private static String TEMP_DIR = "c:/temp";	// Windows
+
+	/**
+	 * Where is your dot program located? It will be called externally.
+	 */
+	//private static String DOT = "/usr/local/bin/dot"; // MAC
+	//private static String DOT = "/usr/bin/dot";	// Linux
+	private static String DOT = "C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe";	// Windows
+
+
+3. You need to change paths for temporary files in GenerateGraph.java
+
+    private static final String TEMP_PATH = "c:\\temp\\graph."; //Windows
+
+
+TO DO:
+
+1. rewrite 50% of code, because the existing implementation is quick and dirty, proof of concept
+2. enums doesn't work.  It would be nice to show them.
+                                                                                              
